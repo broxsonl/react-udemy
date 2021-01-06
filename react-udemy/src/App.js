@@ -1,8 +1,24 @@
 import React, { Component } from 'react';
+import styled from 'styled-components';
 import Person from './Person/Person';
 import UserInput from './UserInput/UserInput';
 import UserOutput from './UserOutput/UserOutput';
+import ValidationComponent from './ValidationComponent/ValidationComponent'
+import CharComponent from './CharComponent/CharComponent'
 import './App.css';
+
+const StyledButton = styled.button`
+  background-color: ${props => props.alt ? 'red' : 'green'};
+  color: white;
+  font: inherit;
+  border: 1px solid blue;
+  padding: 8px;
+  cursor: pointer;
+  &:hover {
+    background-color: ${props => props.alt ? 'salmon' : 'lightgreen'};
+    color: black;
+  }
+`;
 
 // state-ful component because it does manage state
 // Also called 'smart' or 'container' components
@@ -11,9 +27,9 @@ class App extends Component {
   // if state or props changes--since it's a special prop--it will re-render the DOM
   state = {
     persons: [
-      { name: 'Lee', age: 36 },
-      { name: 'Heather', age: 34 },
-      { name: 'Jess', age: 32 },
+      { id: 'ab123', name: 'Lee', age: 36 },
+      { id: 'cd456', name: 'Heather', age: 34 },
+      { id: 'ef789', name: 'Jess', age: 32 },
     ],
     showPersons: false,
   }
@@ -22,20 +38,38 @@ class App extends Component {
   switchNameHandler = (newName) => {
     // DON'T SET STATE DIRECTLY: this.state.persons[0].setState('name' = 'LeeBanana'
     this.setState({persons: [
-      { name: newName, age: 36 },
-      { name: 'Heather', age: 27 },
-      { name: 'Jess', age: 32 },
+      { id: 'ab123', name: newName, age: 36 },
+      { id: 'cd456', name: 'Heather', age: 27 },
+      { id: 'ef789', name: 'Jess', age: 32 },
     ]})
   }
 
-  nameChangedHandler = (event) => {
-    this.setState({
-      persons: [
-        { name: 'Lee', age: 36 },
-        { name: event.target.value, age: 27 },
-        { name: 'Jess', age: 32 },
-      ]
+  nameChangedHandler = (event, id) => {
+    const personIndex = this.state.persons.findIndex(p => {
+      return p.id === id;
     })
+
+    const person = {
+      ...this.state.persons[personIndex],
+    }
+
+    person.name = event.target.value;
+
+    const persons = [...this.state.persons];
+
+    persons[personIndex] = person;
+
+    this.setState({
+      persons,
+    })
+  }
+
+  deletePersonHandler = (personIndex) => {
+    const personsCopy = [...this.state.persons];
+
+    personsCopy.splice(personIndex, 1);
+
+    this.setState({ persons: personsCopy });
   }
 
   togglePersonsHandler = () => {
@@ -43,47 +77,106 @@ class App extends Component {
     this.setState({ showPersons: !doesShow })
   }
 
-  render() { 
-    const buttonStyle = {
-      backgroundColor: 'white',
-      font: 'inherit',
-      border: '1px solid blue',
-      padding: '8px',
-      cursor: 'pointer',
-    };
+  inputCharsHandler = (event) => {
+    const outputString = event && event.target && event.target.value;
+    const charsArray = outputString.split('');
+
+    this.setState(
+      {
+        charsArray,
+        outputLength: charsArray.length
+      });
+  }
+
+  deleteCharsHandler = (charIndex) => {
+    const charsCopy = [...this.state.charsArray];
+
+    charsCopy.splice(charIndex, 1);
+
+    this.setState({ charsArray: charsCopy })
+  }
+
+  render() {
+    // const buttonStyle = {
+    //   backgroundColor: 'green',
+    //   color: 'white',
+    //   font: 'inherit',
+    //   border: '1px solid blue',
+    //   padding: '8px',
+    //   cursor: 'pointer',
+    //   ':hover': {
+    //     backgroundColor: 'lightgreen',
+    //     color: 'black',
+    //   },
+    // };
+
+    let persons = null;
+
+    if (this.state.showPersons) {
+      persons = (
+        <div>
+          {this.state.persons.map((person, index) => {
+            return <Person
+              key={person.id}
+              name={person.name}
+              age={person.age}
+
+              changed={(event) => this.nameChangedHandler(event, person.id)}
+              click={() => this.deletePersonHandler(index)} />
+          })}
+        </div>
+      );
+
+      // buttonStyle.backgroundColor = 'red';
+      // buttonStyle[':hover'] = {
+      //   backgroundColor: 'salmon',
+      //   color: 'black',
+      // }
+    }
+
+    const classes = [];
+
+    if (this.state.persons.length <= 2) {
+      classes.push('red');
+    }
+
+    if (this.state.persons.length <=1) {
+      classes.push('bold');
+    }
+
+    let chars = null;
+    if (this.state && this.state.charsArray) {
+      chars = (
+        <div>
+          {this.state.charsArray.map((char, index) => {
+            return <CharComponent
+              char={char}
+              click={() => this.deleteCharsHandler(index)} />
+          })}
+        </div>
+      )
+    }
 
     return (
       <div className="App">
         <h1>Hi, I'm a React App</h1>
-        <p>This is really working!</p>
-        <button 
-          style={buttonStyle}
-          onClick={this.togglePersonsHandler}
-        >
-          Switch Name
-        </button>
-        {
-          this.state.showPersons === true ?
-            <div>
-              <Person 
-                name={this.state.persons[0].name} 
-                age={this.state.persons[0].age} />
-              <Person 
-                name={this.state.persons[1].name} 
-                age={this.state.persons[1].age}
-                click={this.switchNameHandler.bind(this, 'STRAWBERRYLEE')}
-                changed={this.nameChangedHandler}
-              >
-                My Hobbies: Racing
-              </Person>
-              <Person 
-                name={this.state.persons[2].name} 
-                age={this.state.persons[2].age} 
-              />
-            </div> : null
-      }
-      </div>
+        <p className={classes.join(' ')}>This is really working!</p>
+        <StyledButton alt={this.state.showPersons} onClick={this.togglePersonsHandler}>
+          Toggle persons
+        </StyledButton>
+        {persons}
 
+        <input
+          type="text"
+          onChange={(event) => this.inputCharsHandler(event)}
+        />
+        <p>{this.state.outputLength}</p>
+        <ValidationComponent stringLength={this.state.outputLength} />
+        {chars}
+
+
+
+      </div>
       // <h1>Another heading</h1> Not best practice; only a single wrapping element, ie, App div
     );
 
