@@ -1,24 +1,10 @@
 import React, { Component } from 'react';
-import styled from 'styled-components';
 import Person from './Person/Person';
 import UserInput from './UserInput/UserInput';
 import UserOutput from './UserOutput/UserOutput';
 import ValidationComponent from './ValidationComponent/ValidationComponent'
 import CharComponent from './CharComponent/CharComponent'
 import './App.css';
-
-const StyledButton = styled.button`
-  background-color: ${props => props.alt ? 'red' : 'green'};
-  color: white;
-  font: inherit;
-  border: 1px solid blue;
-  padding: 8px;
-  cursor: pointer;
-  &:hover {
-    background-color: ${props => props.alt ? 'salmon' : 'lightgreen'};
-    color: black;
-  }
-`;
 
 // state-ful component because it does manage state
 // Also called 'smart' or 'container' components
@@ -161,9 +147,9 @@ class App extends Component {
       <div className="App">
         <h1>Hi, I'm a React App</h1>
         <p className={classes.join(' ')}>This is really working!</p>
-        <StyledButton alt={this.state.showPersons} onClick={this.togglePersonsHandler}>
+        <button className="button" onClick={this.togglePersonsHandler}>
           Toggle persons
-        </StyledButton>
+        </button>
         {persons}
 
         <input
